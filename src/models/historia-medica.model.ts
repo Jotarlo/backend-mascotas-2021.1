@@ -1,6 +1,18 @@
-import {Entity, model, property} from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {Mascota} from './mascota.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_mascota_id_historia: {
+        name: 'fk_mascota_id_historia',
+        entity: 'Mascota',
+        entityKey: 'id',
+        foreignKey: 'mascotaId',
+      },
+    },
+  },
+})
 export class HistoriaMedica extends Entity {
 
   @property({
@@ -28,6 +40,8 @@ export class HistoriaMedica extends Entity {
   })
   recomendaciones: string;
 
+  @belongsTo(() => Mascota)
+  mascotaId: number;
 
   constructor(data?: Partial<HistoriaMedica>) {
     super(data);
