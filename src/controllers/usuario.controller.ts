@@ -23,6 +23,7 @@ import {
 } from '@loopback/rest';
 import {Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
+import {GeneralFunctionsService} from '../services/general.functions.service';
 
 export class UsuarioController {
   constructor(
@@ -41,13 +42,19 @@ export class UsuarioController {
         'application/json': {
           schema: getModelSchemaRef(Usuario, {
             title: 'NewUsuario',
-            exclude: ['id'],
+            exclude: ['id', 'clave'],
           }),
         },
       },
     })
     usuario: Omit<Usuario, 'id'>,
   ): Promise<Usuario> {
+    let service = new GeneralFunctionsService();
+    let claveAleatoria = service.GenerarClaveAleatoria();
+    console.log(claveAleatoria);
+    let claveCifrada = service.CifrarTexto(claveAleatoria);
+    usuario.clave = claveCifrada;
+
     return this.usuarioRepository.create(usuario);
   }
 
