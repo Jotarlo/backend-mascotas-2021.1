@@ -1,12 +1,11 @@
-
+import { /* inject, */ BindingScope, injectable} from '@loopback/core';
 import {generate} from 'generate-password';
+
 const CryptoJS = require("crypto-js");
 
-export class GeneralFunctionsService {
-  constructor() {
-
-  }
-
+@injectable({scope: BindingScope.TRANSIENT})
+export class GeneralFnService {
+  constructor(/* Add @inject to inject parameters */) { }
 
   /**
    * Función para generar una clave aleatoria

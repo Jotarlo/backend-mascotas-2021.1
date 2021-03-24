@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -23,12 +24,14 @@ import {
 } from '@loopback/rest';
 import {Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
-import {GeneralFunctionsService} from '../services/general.functions.service';
+import {GeneralFnService} from '../services';
 
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
     public usuarioRepository: UsuarioRepository,
+    @service(GeneralFnService)
+    public fnService: GeneralFnService
   ) { }
 
   @post('/usuarios')
@@ -49,10 +52,9 @@ export class UsuarioController {
     })
     usuario: Omit<Usuario, 'id'>,
   ): Promise<Usuario> {
-    let service = new GeneralFunctionsService();
-    let claveAleatoria = service.GenerarClaveAleatoria();
+    let claveAleatoria = this.fnService.GenerarClaveAleatoria();
     console.log(claveAleatoria);
-    let claveCifrada = service.CifrarTexto(claveAleatoria);
+    let claveCifrada = this.fnService.CifrarTexto(claveAleatoria);
     usuario.clave = claveCifrada;
 
     return this.usuarioRepository.create(usuario);
