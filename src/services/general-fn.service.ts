@@ -27,7 +27,7 @@ export class GeneralFnService {
    */
   CifrarTexto(texto: string): string {
     //let ciphertext = CryptoJS.AES.encrypt(texto, llaves.AESKey).toString();
-    let ciphertext = CryptoJS.MD5(texto);
+    let ciphertext = CryptoJS.MD5(texto).toString();
     return ciphertext;
   }
 }

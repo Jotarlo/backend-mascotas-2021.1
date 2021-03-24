@@ -22,16 +22,19 @@ import {
   requestBody,
   response
 } from '@loopback/rest';
+import {Keys as llaves} from '../config/keys';
 import {Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
-import {GeneralFnService} from '../services';
+import {GeneralFnService, NotificacionService} from '../services';
 
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
     public usuarioRepository: UsuarioRepository,
     @service(GeneralFnService)
-    public fnService: GeneralFnService
+    public fnService: GeneralFnService,
+    @service(NotificacionService)
+    public servicioNotificacion: NotificacionService
   ) { }
 
   @post('/usuarios')
@@ -55,9 +58,16 @@ export class UsuarioController {
     let claveAleatoria = this.fnService.GenerarClaveAleatoria();
     console.log(claveAleatoria);
     let claveCifrada = this.fnService.CifrarTexto(claveAleatoria);
-    usuario.clave = claveCifrada;
+    console.log(claveCifrada);
 
-    return this.usuarioRepository.create(usuario);
+    usuario.clave = claveCifrada;
+    let usuarioAgregado = await this.usuarioRepository.create(usuario);
+
+    // notificar al usuario
+    let contenido = `<strong>Hola, buen día</strong><br />su correo ha sido registrado en el sistema de mascotas. Sus datos de acceso son: <br /><br /><ul><li>Usuario: ${usuario.nombre_usuario}</li><li>Clave: ${claveAleatoria}</li></ul><br /> <br />Tu equipo de Mascotas te espera. Feliz día.`;
+    this.servicioNotificacion.EnviarEmail(usuario.nombre_usuario, llaves.AsuntoRegistroUsuario, contenido);
+
+    return usuarioAgregado;
   }
 
   @get('/usuarios/count')
