@@ -9,7 +9,7 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param,
+  getModelSchemaRef, HttpErrors, param,
 
 
   patch, post,
@@ -23,9 +23,10 @@ import {
   response
 } from '@loopback/rest';
 import {Keys as llaves} from '../config/keys';
-import {Usuario} from '../models';
+import {Credenciales, Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
-import {GeneralFnService, NotificacionService} from '../services';
+import {GeneralFnService, JwtService, NotificacionService} from '../services';
+
 
 export class UsuarioController {
   constructor(
@@ -34,7 +35,9 @@ export class UsuarioController {
     @service(GeneralFnService)
     public fnService: GeneralFnService,
     @service(NotificacionService)
-    public servicioNotificacion: NotificacionService
+    public servicioNotificacion: NotificacionService,
+    @service(JwtService)
+    public servicioJWT: JwtService
   ) { }
 
   @post('/usuarios')
@@ -170,4 +173,36 @@ export class UsuarioController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.usuarioRepository.deleteById(id);
   }
+
+
+  @post('/identificar', {
+    responses: {
+      '200': {
+        description: 'Identificación de usuarios'
+      }
+    }
+  })
+  async identificar(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Credenciales),
+        },
+      },
+    }) credenciales: Credenciales
+  ): Promise<object> {
+    let usuario = await this.usuarioRepository.findOne({where: {nombre_usuario: credenciales.nombre_usuario, clave: credenciales.clave}});
+    if (usuario) {
+      let tk = this.servicioJWT.CrearTokenJWT(usuario);
+      usuario.clave = '';
+      return {
+        user: usuario,
+        token: tk
+      };
+    } else {
+      throw new HttpErrors[401]("Usuario o clave incorrecto.")
+    }
+  }
+
+
 }
