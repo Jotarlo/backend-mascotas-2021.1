@@ -22,4 +22,17 @@ export class JwtService {
     }, claveSecreta);
     return tk;
   }
+
+  /**
+   * Verificar un token
+   */
+  VerificarTokenJWT(token: string) {
+    try {
+      let decoded = jwt.verify(token, llaves.jwtKey);
+      return decoded;
+    } catch {
+      return null;
+    }
+  }
+
 }
