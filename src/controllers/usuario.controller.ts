@@ -23,7 +23,7 @@ import {
   response
 } from '@loopback/rest';
 import {Keys as llaves} from '../config/keys';
-import {Credenciales, Usuario} from '../models';
+import {Credenciales, ResetearClave, Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
 import {GeneralFnService, JwtService, NotificacionService} from '../services';
 
@@ -202,6 +202,47 @@ export class UsuarioController {
     } else {
       throw new HttpErrors[401]("Usuario o clave incorrecto.")
     }
+  }
+
+
+  @post('/reset-password')
+  @response(200, {
+    description: 'Usuario model instance',
+    content: {'application/json': {schema: getModelSchemaRef(ResetearClave)}},
+  })
+  async resetPassword(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ResetearClave),
+        },
+      },
+    })
+    resetearClave: ResetearClave,
+  ): Promise<object> {
+    let usuario = await this.usuarioRepository.findOne({where: {nombre_usuario: resetearClave.correo}})
+    if (!usuario) {
+      throw new HttpErrors[403]("No se encuentra el usuario.")
+    }
+    let claveAleatoria = this.fnService.GenerarClaveAleatoria();
+    console.log(claveAleatoria);
+    let claveCifrada = this.fnService.CifrarTexto(claveAleatoria);
+    console.log(claveCifrada);
+
+    usuario.clave = claveCifrada;
+    await this.usuarioRepository.update(usuario);
+
+    // notificar al usuario
+    let contenido = `Hola, hemos reseteado tu clave. Usuario: ${usuario.nombre_usuario} y Clave: ${claveAleatoria}.`;
+    let enviado = this.servicioNotificacion.EnviarSMS(usuario.telefono, contenido);
+    if (enviado) {
+      return {
+        enviado: "OK"
+      };
+    }
+    return {
+      enviado: "KO"
+    };
   }
 
 

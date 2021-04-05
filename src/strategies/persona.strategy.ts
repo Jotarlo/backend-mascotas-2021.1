@@ -8,6 +8,7 @@ import {JwtService} from '../services';
  * Packages:
  * npm i @loopback/authentication
  * npm i @loopback/security
+ * npm i parse-bearer-token
  */
 export class PersonaStrategy implements AuthenticationStrategy {
   name: string = 'persona';
