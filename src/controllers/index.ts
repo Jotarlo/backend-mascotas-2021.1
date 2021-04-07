@@ -27,3 +27,5 @@ export * from './ciudad.controller';
 export * from './departamento.controller';
 export * from './tipo-mascota.controller';
 export * from './raza.controller';
+export * from './carga-archivo.controller';
+export * from './descarga-archivo.controller';
